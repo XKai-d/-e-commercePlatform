@@ -32,6 +32,69 @@
         >
       </el-row>
 
+      <!-- 用户列表区 -->
+      <el-table :data="Userlist" border stripe>
+        <el-table-column type="index" label="#"> </el-table-column>
+        <el-table-column prop="username" label="姓名"> </el-table-column>
+        <el-table-column prop="email" label="邮箱"> </el-table-column>
+        <el-table-column prop="mobile" label="电话"> </el-table-column>
+        <el-table-column prop="role_name" label="角色"> </el-table-column>
+        <el-table-column prop="mg_state" label="状态">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.mg_state"
+              active-color="#13ce66"
+              @change="statusChange(scope.row)"
+            >
+            </el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280px">
+          <template slot-scope="scope">
+            <!-- 修改按钮 -->
+            <el-button
+              type="success"
+              size="mini"
+              icon="el-icon-edit"
+              @click="updateDialogShow(scope.row)"
+            ></el-button>
+            <!-- 删除按钮 -->
+            <el-button
+              type="danger"
+              size="mini"
+              icon="el-icon-delete"
+              @click="deleteUserDate(scope.row.id)"
+            ></el-button>
+            <!-- 分配角色权限 -->
+            <el-tooltip
+              effect="dark"
+              content="分配角色"
+              placement="top"
+              :enterable="false"
+            >
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-setting"
+                @click="SetRolesAllt(scope.row)"
+              ></el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页功能区 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-sizes="[2, 5, 10, 20, 30, 40, 50]"
+        :page-size="queryInfo.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      >
+      </el-pagination>
+
       <!-- 弹窗对话框区域，新增用户 -->
       <el-dialog
         title="添加用户"
@@ -63,6 +126,7 @@
           <el-button type="primary" @click="addNewUser()">确 定</el-button>
         </div>
       </el-dialog>
+
       <!-- 修改用户的对话框 -->
       <el-dialog
         title="修改用户信息"
@@ -92,67 +156,36 @@
         </div>
       </el-dialog>
 
-      <!-- 用户列表区 -->
-      <el-table :data="Userlist" border stripe>
-        <el-table-column type="index" label="#"> </el-table-column>
-        <el-table-column prop="username" label="姓名"> </el-table-column>
-        <el-table-column prop="email" label="邮箱"> </el-table-column>
-        <el-table-column prop="mobile" label="电话"> </el-table-column>
-        <el-table-column prop="role_name" label="角色"> </el-table-column>
-        <el-table-column prop="mg_state" label="状态">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.mg_state"
-              active-color="#13ce66"
-              @change="statusChange(scope.row)"
-            >
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180px">
-          <template slot-scope="scope">
-            <!-- 修改按钮 -->
-            <el-button
-              type="success"
-              size="mini"
-              icon="el-icon-edit"
-              @click="updateDialogShow(scope.row)"
-            ></el-button>
-            <!-- 分配角色权限 -->
-            <el-tooltip
-              effect="dark"
-              content="分配权限"
-              placement="top"
-              :enterable="false"
-            >
-              <el-button
-                type="primary"
-                size="mini"
-                icon="el-icon-setting"
-              ></el-button>
-            </el-tooltip>
-            <!-- 删除按钮 -->
-            <el-button
-              type="danger"
-              size="mini"
-              icon="el-icon-delete"
-              @click="deleteUserDate(scope.row.id)"
-            ></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页功能区 -->
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="queryInfo.pagenum"
-        :page-sizes="[2, 5, 10, 20, 30, 40, 50]"
-        :page-size="queryInfo.pagesize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
+      <!-- 分配角色 -->
+      <el-dialog
+        title="修改用户信息"
+        :visible.sync="dialogFormVisibleuRight"
+        width="36%"
+        @close="dialogRightClose()"
       >
-      </el-pagination>
+        <div>
+          <p>当前的用户：{{ userInfoRow.username }}</p>
+          <p>用户的角色：{{ userInfoRow.role_name }}</p>
+          <p>
+            分配新角色：
+            <template>
+              <el-select v-model="selectRolesid" placeholder="请选择">
+                <el-option
+                  v-for="item in rightlist"
+                  :key="item.id"
+                  :label="item.roleName"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </template>
+          </p>
+        </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisibleuRight = false">取 消</el-button>
+          <el-button type="primary" @click="chageUserRight()">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -195,6 +228,14 @@ export default {
       dialogFormVisible: false,
       // 控制修改对话框的显示和隐藏
       dialogFormVisibleupdate: false,
+      // 控制分配角色对话框的显示和隐藏
+      dialogFormVisibleuRight: false,
+      // 分角色的用户数据
+      userInfoRow: {},
+      // 角色列表选中项
+      selectRolesid: '',
+      // 角色列表
+      rightlist: [],
       // 新增的用户信息
       addUserFrom: {
         username: '',
@@ -263,6 +304,7 @@ export default {
       } else {
         this.Userlist = res.data.users
         this.total = res.data.total
+        return this.$message.success('数据获取成功')
       }
     },
     // 监听：每页多少条数据
@@ -284,7 +326,7 @@ export default {
         userdate.mg_state = !userdate.mg_state
         return this.$message.error(res.meta.msg)
       } else {
-        return this.$message(res.meta.msg)
+        return this.$message.success(res.meta.msg)
       }
     },
     // 监听对话框关闭，表单重置
@@ -294,27 +336,25 @@ export default {
     // 添加用户信息
     addNewUser() {
       this.$refs.ruleForm.validate(async (results) => {
-        if (!results) {
-          return this.resetAddUserForm('ruleForm')
-        } else {
+        if (results) {
           const { data: res } = await this.$http.post('users', this.addUserFrom)
           if (res.meta.status !== 201) {
             return this.$message.error(res.meta.msg)
           } else {
             this.getUserslist()
             this.dialogFormVisible = false
-            return this.$message(res.meta.msg)
+            return this.$message.success(res.meta.msg)
           }
         }
       })
     },
     // 修改用户信息绑定
     async updateDialogShow(userdate) {
-      this.dialogFormVisibleupdate = true
       const { data: res } = await this.$http.get(`users/${userdate.id}`)
       if (res.meta.status !== 200) {
-        return this.$message(res.meta.msg)
+        return this.$message.error(res.meta.msg)
       } else {
+        this.dialogFormVisibleupdate = true
         this.UpdatUserFrom = res.data
       }
     },
@@ -334,7 +374,7 @@ export default {
           } else {
             this.getUserslist()
             this.dialogFormVisibleupdate = false
-            return this.$message(res.meta.msg)
+            return this.$message.success('修改成功')
           }
         }
       })
@@ -355,8 +395,7 @@ export default {
           } else {
             this.Pageinitial()
             this.getUserslist()
-            this.dialogFormVisibleupdate = false
-            return this.$message(res.meta.msg)
+            return this.$message.success(res.meta.msg)
           }
         })
         .catch(() => {
@@ -365,6 +404,39 @@ export default {
             message: '已取消删除',
           })
         })
+    },
+    // 给用户分配角色对话框
+    async SetRolesAllt(rowuser) {
+      this.userInfoRow = rowuser
+      // 获取所有的角色
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) {
+        this.$message.error('角色列表获取失败')
+      } else {
+        this.rightlist = res.data
+        this.dialogFormVisibleuRight = true
+      }
+    },
+    // 改变用户的角色
+    async chageUserRight() {
+      if (!this.selectRolesid) {
+        return this.$message.error('请选择角色')
+      }
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfoRow.id}/role`,
+        { rid: this.selectRolesid }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error('角色重分配失败')
+      } else {
+        this.getUserslist()
+        this.dialogFormVisibleuRight = false
+        return this.$message.success('角色分配成功')
+      }
+    },
+    // 监听对话框关闭事件
+    dialogRightClose() {
+      this.selectRolesid = ''
     },
   },
 }
