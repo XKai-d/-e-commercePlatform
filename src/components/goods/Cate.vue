@@ -323,20 +323,19 @@ export default {
     // 编辑分类提交
     btnCateEidt() {
       this.$refs.editFormRef.validate(async (result) => {
-        console.log(this.editCateOnce)
-        // if (result) {
-        //   const { data: res } = await this.$http.put(
-        //     `categories/${this.editCateOnce.cat_id}`,
-        //     {cat_name:this.editCateOnce.cat_name}
-        //   )
-        //   if (res.meta.status !== 201) {
-        //     this.$message.error(res.meta.msg)
-        //   } else {
-        //     this.getCateList()
-        //     this.dialogFormCateEidt = false
-        //     this.$message.success(res.meta.msg)
-        //   }
-        // }
+        if (result) {
+          const { data: res } = await this.$http.put(
+            `categories/${this.editCateOnce.cat_pid}`,
+            { cat_name: this.editCateOnce.cat_name }
+          )
+          if (res.meta.status !== 200) {
+            this.$message.error(res.meta.msg)
+          } else {
+            this.getCateList()
+            this.dialogFormCateEidt = false
+            this.$message.success(res.meta.msg)
+          }
+        }
       })
     },
     // 删除商品分类
