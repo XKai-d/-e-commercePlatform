@@ -24,18 +24,59 @@ const routes = [
     component: Home,
     redirect: '/welcome',
     children: [
-      { path: '/welcome', component: Welcome },
-      { path: '/users', component: Users },
-      { path: '/rights', component: Rights },
-      { path: '/roles', component: Roles },
-      { path: '/categories', component: Cate },
-      { path: '/params', component: Params },
-      { path: '/goods', component: Goods },
-      { path: '/goods/add', component: AddGood },
-      { path: '/goods/edit', component: EditGood },
-      { path: '/orders', component: Orders },
-      { path: '/reports', component: Report },
+      { path: '/welcome', component: Welcome, meta: { title: '系统首页' } },
+      {
+        path: '/users',
+        component: Users,
+        meta: { title: '用户管理/用户列表' },
+      },
+      {
+        path: '/rights',
+        component: Rights,
+        meta: { title: '权限管理/权限列表' },
+      },
+      {
+        path: '/roles',
+        component: Roles,
+        meta: { title: '权限管理/角色列表' },
+      },
+      {
+        path: '/categories',
+        component: Cate,
+        meta: { title: '商品管理/商品分类' },
+      },
+      {
+        path: '/params',
+        component: Params,
+        meta: { title: '商品管理/分类参数' },
+      },
+      {
+        path: '/goods',
+        component: Goods,
+        meta: { title: '商品管理/商品列表' },
+      },
+      {
+        path: '/goods/add',
+        component: AddGood,
+        meta: { title: '商品管理/添加商品' },
+      },
+      {
+        path: '/goods/edit',
+        component: EditGood,
+        meta: { title: '商品管理/编辑商品' },
+      },
+      {
+        path: '/orders',
+        component: Orders,
+        meta: { title: '订单管理/订单列表' },
+      },
+      {
+        path: '/reports',
+        component: Report,
+        meta: { title: '数据统计/数据报表' },
+      },
     ],
+    meta: { title: '系统首页' },
   },
 ]
 

@@ -64,6 +64,15 @@
       </el-aside>
       <!-- 主题内容 -->
       <el-main>
+        <!-- 面包屑导航区域 -->
+        <el-breadcrumb separator-class="el-icon-arrow-right">
+          <el-breadcrumb-item
+            v-for="(item, i) in breadList"
+            :key="i"
+            :to="{ path:item.path}"
+            >{{ item.meta.title }}</el-breadcrumb-item
+          >
+        </el-breadcrumb>
         <!-- 路由占位符 -->
         <router-view></router-view>
       </el-main>
@@ -73,6 +82,11 @@
 
 <script>
 export default {
+  watch: {
+    $route() {
+      this.getBreadcrumb()
+    },
+  },
   data() {
     return {
       username: '',
@@ -89,9 +103,15 @@ export default {
         145: 'iconfont icon-baobiao',
       },
       pathurl: '',
+      // 路由集合
+      breadList: [],
     }
   },
   methods: {
+    getBreadcrumb() {
+      const matched = this.$route.matched
+      this.breadList = matched
+    },
     logout() {
       window.sessionStorage.clear()
       this.$router.push('/login')
@@ -128,6 +148,7 @@ export default {
     this.username = '欢迎您：' + window.sessionStorage.getItem('username')
     this.pathurl = window.sessionStorage.urlpaths || ''
     this.getMenulist()
+    this.getBreadcrumb()
   },
 }
 </script>
